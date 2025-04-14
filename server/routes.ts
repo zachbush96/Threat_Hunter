@@ -110,16 +110,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content: `You are a cybersecurity expert specializing in extracting Indicators of Compromise (IOCs) from web content. 
-            Analyze the provided content and identify any potential IOCs such as:
-            - IP addresses
-            - Domain names
-            - URLs
-            - File hashes (MD5, SHA1, SHA256)
-            - Email addresses
-            - Filenames and paths
+            content: `You are a cybersecurity expert specializing in threat hunting and extracting Indicators of Compromise (IOCs) from vulnerability reports and exploit descriptions.
+
+            Your primary focus is on uncovering technical IOCs that are directly related to the exploit/vulnerability being discussed, not just references or links to learn more.
             
-            For each IOC, determine its risk level (high, medium, low, or unknown) and provide a brief description of where it was found and what makes it suspicious.
+            Analyze the provided content and extract the following types of IOCs:
+            - IP addresses used in attacks or mentioned as malicious/suspicious
+            - Domain names used by attackers or involved in the exploit
+            - URLs specifically tied to the exploit (attack paths, malicious endpoints, etc.)
+            - File hashes (MD5, SHA1, SHA256) for any malicious files, payloads, or artifacts
+            - Email addresses used by attackers or involved in phishing/social engineering
+            - Filenames and paths of vulnerable files, payloads, or attack tools
+            - CVE IDs and vulnerability identifiers
+            - Command lines, curl commands, or exploit code snippets
+            - Registry keys, process names, or services affected
+            
+            Only include IOCs that are actually related to the exploit or attack itself - DO NOT include general references, documentation links, or URLs to security blog posts unless they are part of the attack infrastructure.
+            
+            For each IOC, determine its risk level (high, medium, low, or unknown) based on:
+            - High: Directly tied to active attacks or exploitation
+            - Medium: Potentially malicious or part of the vulnerability but not confirmed as actively used
+            - Low: Related but not inherently malicious
+            - Unknown: Unable to determine risk level
+            
+            Provide a detailed technical description for each IOC explaining:
+            1. Where in the content it was found
+            2. How it relates to the exploit/vulnerability
+            3. Why it's significant for security monitoring
             
             Organize the IOCs by category, and provide a count for each category.
             
@@ -130,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   "value": "actual indicator value",
                   "category": "ip|domain|url|hash|email|file",
                   "riskLevel": "high|medium|low|unknown",
-                  "description": "brief description of where found and why suspicious"
+                  "description": "technical description of why this is significant"
                 }
               ],
               "categories": [
@@ -189,14 +206,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content: `You are a SIEM expert specializing in QRadar and Microsoft Sentinel. Generate search queries for the provided IOCs.
+            content: `You are a SIEM expert specializing in QRadar and Microsoft Sentinel. Generate high-quality, production-ready search queries for the provided IOCs.
             
-            For QRadar, create AQL queries that search for the provided IOCs in appropriate log sources.
-            For Microsoft Sentinel, create KQL queries that search for the provided IOCs.
+            For QRadar:
+            - Create detailed AQL queries that search for the provided IOCs across appropriate log sources
+            - Include event correlation, time filtering (last 30 days), and properly formatted field selections
+            - For IP addresses, include checks in both source and destination IP fields
+            - For domains/URLs, check in DNS queries, HTTP requests, proxy logs
+            - For file hashes, check against file hash fields in EDR/antivirus logs
+            - For registry keys or filenames, check against Windows event logs
             
-            Group queries by IOC type (IP, domain, hash, etc.). Each query should include:
-            1. A descriptive name
-            2. The actual query formatted properly for the respective system
+            For Microsoft Sentinel:
+            - Create comprehensive KQL queries using proper Sentinel tables and joins when needed
+            - Include timeframe filters (last 30 days), project statements, and where clauses
+            - For IP addresses, check NetworkSession, SecurityEvent, etc.
+            - For domains/URLs, check DNS, web proxy logs, and Office 365 logs
+            - For file hashes, check SecurityEvent and DeviceFileEvents
+            - Include proper syntax for sorting, limiting, and displaying results
+            
+            Group queries logically by IOC type (IP, domain, hash, etc.) and threat context. Each query should include:
+            1. A specific and descriptive name that indicates the purpose and target
+            2. The complete, properly-formatted query with comments where helpful
             
             Return the results as a JSON object with this structure:
             {

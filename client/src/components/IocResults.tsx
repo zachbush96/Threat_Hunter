@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileCode2, Link, Copy, Globe, FileText, Server, Search } from "lucide-react";
+import { FileCode2, Link, Copy, Globe, FileText, Server, Search, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Category, Indicator } from "@/lib/openai";
 
