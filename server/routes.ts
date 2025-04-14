@@ -5,6 +5,7 @@ import { iocResultSchema, insertIocSchema, insertSearchQuerySchema, searchQueryS
 import fetch from "node-fetch";
 import OpenAI from "openai";
 import { z } from "zod";
+import { parse } from 'node-html-parser';
 
 // Create OpenAI client
 const openai = new OpenAI({
@@ -13,7 +14,7 @@ const openai = new OpenAI({
 
 // Create a FireCrawl client
 const firecrawlApiKey = process.env.FIRECRAWL_API_KEY || "";
-const firecrawlBaseUrl = "https://api.firecrawl.io";
+const firecrawlBaseUrl = "https://api.firecrawl.dev/v1";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Route to scrape URL with Firecrawl and extract IOCs with OpenAI
@@ -34,25 +35,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Call Firecrawl API to scrape the URL
-      const firecrawlResponse = await fetch(`${firecrawlBaseUrl}/scrape`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${firecrawlApiKey}`
-        },
-        body: JSON.stringify({ url })
-      });
+      let scrapedContent = "";
       
-      if (!firecrawlResponse.ok) {
-        const errorText = await firecrawlResponse.text();
-        return res.status(firecrawlResponse.status).json({ 
-          message: `Firecrawl API error: ${errorText}` 
+      // Try to use Firecrawl API first
+      try {
+        console.log(`Scraping URL with Firecrawl: ${url}`);
+        const firecrawlResponse = await fetch(`${firecrawlBaseUrl}/scrape`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${firecrawlApiKey}`
+          },
+          body: JSON.stringify({ 
+            url,
+            formats: ["markdown"] 
+          })
         });
+        
+        if (firecrawlResponse.ok) {
+          const firecrawlData = await firecrawlResponse.json();
+          if (firecrawlData.success && firecrawlData.data && firecrawlData.data.markdown) {
+            scrapedContent = firecrawlData.data.markdown;
+            console.log("Successfully scraped URL with Firecrawl");
+          } else {
+            throw new Error("Invalid response from Firecrawl");
+          }
+        } else {
+          throw new Error(`Firecrawl API error: ${firecrawlResponse.status}`);
+        }
+      } catch (fireError) {
+        console.warn("Error using Firecrawl API, falling back to direct fetch:", fireError);
+        
+        // Fallback to direct fetch
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          }
+        });
+        
+        if (!response.ok) {
+          return res.status(response.status).json({ 
+            message: `Error fetching URL: ${response.statusText}` 
+          });
+        }
+        
+        const htmlContent = await response.text();
+        
+        // Parse HTML to extract text content
+        const root = parse(htmlContent);
+        // Remove script and style elements
+        root.querySelectorAll('script, style').forEach(el => el.remove());
+        
+        // Get text content and clean it up
+        scrapedContent = root.textContent;
+        // Basic cleaning - remove extra whitespace
+        scrapedContent = scrapedContent.replace(/\s+/g, ' ').trim();
       }
-      
-      const firecrawlData = await firecrawlResponse.json();
-      const scrapedContent = firecrawlData.content || "";
       
       // Use OpenAI to extract IOCs from the scraped content
       const openaiResponse = await openai.chat.completions.create({
@@ -100,7 +138,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response_format: { type: "json_object" }
       });
       
-      const iocResults = JSON.parse(openaiResponse.choices[0].message.content);
+      const content = openaiResponse.choices[0].message.content || "{}";
+      const iocResults = JSON.parse(content);
       
       // Validate the IOC results
       const validatedResults = iocResultSchema.parse(iocResults);
@@ -171,7 +210,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response_format: { type: "json_object" }
       });
       
-      const searchQueries = JSON.parse(openaiResponse.choices[0].message.content);
+      const searchContent = openaiResponse.choices[0].message.content || "{}";
+      const searchQueries = JSON.parse(searchContent);
       
       // Validate the search queries
       const validatedQueries = searchQuerySchema.parse(searchQueries);

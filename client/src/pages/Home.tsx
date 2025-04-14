@@ -90,7 +90,7 @@ export default function Home() {
             <p className="flex items-start">
               <AlertCircle className="h-5 w-5 mr-2 text-accent-600 dark:text-accent-400 flex-shrink-0 mt-0.5" />
               <span className="dark:text-secondary-200">
-                This tool uses Firecrawl API to scrape the URL and OpenAI to analyze the content and generate search queries.
+                This tool uses Firecrawl API to scrape URLs and OpenAI to analyze the content for IOCs and generate search queries for QRadar and Microsoft Sentinel.
               </span>
             </p>
           </div>
