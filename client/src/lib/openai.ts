@@ -1,8 +1,11 @@
 import { apiRequest } from "./queryClient";
 
 export interface AnalyzeUrlResponse {
-  indicators: Indicator[];
-  categories: Category[];
+  indicators: {
+    categories: Category[];
+    indicators: Indicator[];
+  };
+  message?: string;
 }
 
 export interface Indicator {

@@ -48,8 +48,8 @@ export default function Home() {
     setIsGeneratingSearches(true);
     
     try {
-      // Flatten all indicators from all categories
-      const allIndicators = iocResult.categories.flatMap(category => category.indicators);
+      // Access indicators array from the nested structure
+      const allIndicators = iocResult.indicators.indicators || [];
       
       const result = await generateSearchQueries(allIndicators);
       setSearchQueries(result);
@@ -103,7 +103,7 @@ export default function Home() {
         {iocResult && (
           <IocResults 
             url={url}
-            categories={iocResult.indicators?.categories || []}
+            categories={iocResult.indicators.categories}
             isGeneratingSearches={isGeneratingSearches}
             onGenerateSearches={handleGenerateSearches}
           />
