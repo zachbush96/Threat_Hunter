@@ -53,8 +53,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         if (firecrawlResponse.ok) {
-          const firecrawlData = await firecrawlResponse.json();
-          if (firecrawlData.success && firecrawlData.data && firecrawlData.data.markdown) {
+          const firecrawlData = await firecrawlResponse.json() as { 
+            success: boolean; 
+            data?: { 
+              markdown?: string;
+              metadata?: {
+                title?: string;
+                description?: string;
+                language?: string | null;
+                sourceURL?: string;
+              }
+            } 
+          };
+          
+          if (firecrawlData.success && firecrawlData.data?.markdown) {
             scrapedContent = firecrawlData.data.markdown;
             console.log("Successfully scraped URL with Firecrawl");
           } else {
