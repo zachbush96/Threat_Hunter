@@ -23,77 +23,67 @@ export interface IStorage {
   getSearchQueryByIocId(iocId: number): Promise<SearchQuery | undefined>;
 }
 
-// In-memory storage implementation
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private iocs: Map<number, Ioc>;
-  private searchQueries: Map<number, SearchQuery>;
-  private currentUserId: number;
-  private currentIocId: number;
-  private currentSearchQueryId: number;
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
-  constructor() {
-    this.users = new Map();
-    this.iocs = new Map();
-    this.searchQueries = new Map();
-    this.currentUserId = 1;
-    this.currentIocId = 1;
-    this.currentSearchQueryId = 1;
-  }
-
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   // IOC methods
   async createIoc(insertIoc: InsertIoc): Promise<Ioc> {
-    const id = this.currentIocId++;
-    const ioc: Ioc = { ...insertIoc, id };
-    this.iocs.set(id, ioc);
+    const [ioc] = await db
+      .insert(iocs)
+      .values(insertIoc)
+      .returning();
     return ioc;
   }
 
   async getIoc(id: number): Promise<Ioc | undefined> {
-    return this.iocs.get(id);
+    const [ioc] = await db.select().from(iocs).where(eq(iocs.id, id));
+    return ioc || undefined;
   }
 
   async getIocByUrl(url: string): Promise<Ioc | undefined> {
-    return Array.from(this.iocs.values()).find(
-      (ioc) => ioc.url === url,
-    );
+    const [ioc] = await db.select().from(iocs).where(eq(iocs.url, url));
+    return ioc || undefined;
   }
 
   // Search query methods
   async createSearchQuery(insertSearchQuery: InsertSearchQuery): Promise<SearchQuery> {
-    const id = this.currentSearchQueryId++;
-    const searchQuery: SearchQuery = { ...insertSearchQuery, id };
-    this.searchQueries.set(id, searchQuery);
+    const [searchQuery] = await db
+      .insert(searchQueries)
+      .values(insertSearchQuery)
+      .returning();
     return searchQuery;
   }
 
   async getSearchQuery(id: number): Promise<SearchQuery | undefined> {
-    return this.searchQueries.get(id);
+    const [searchQuery] = await db.select().from(searchQueries).where(eq(searchQueries.id, id));
+    return searchQuery || undefined;
   }
 
   async getSearchQueryByIocId(iocId: number): Promise<SearchQuery | undefined> {
-    return Array.from(this.searchQueries.values()).find(
-      (searchQuery) => searchQuery.iocId === iocId,
-    );
+    const [searchQuery] = await db.select().from(searchQueries).where(eq(searchQueries.iocId, iocId));
+    return searchQuery || undefined;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
