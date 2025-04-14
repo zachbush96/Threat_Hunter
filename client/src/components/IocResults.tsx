@@ -115,8 +115,8 @@ export function IocResults({
         </div>
 
         {/* IOC Categories Accordion */}
-        <Accordion type="multiple" defaultValue={categories.map(c => c.name)} className="space-y-4">
-          {categories.map((category) => (
+        <Accordion type="multiple" defaultValue={categories?.length ? categories.map(c => c.name) : []} className="space-y-4">
+          {categories?.length > 0 && categories.map((category) => (
             <AccordionItem 
               key={category.name} 
               value={category.name}

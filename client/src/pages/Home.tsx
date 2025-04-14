@@ -103,7 +103,7 @@ export default function Home() {
         {iocResult && (
           <IocResults 
             url={url}
-            categories={iocResult.categories}
+            categories={iocResult.indicators?.categories || []}
             isGeneratingSearches={isGeneratingSearches}
             onGenerateSearches={handleGenerateSearches}
           />
