@@ -11,12 +11,13 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // IOC operations
   createIoc(ioc: InsertIoc): Promise<Ioc>;
   getIoc(id: number): Promise<Ioc | undefined>;
   getIocByUrl(url: string): Promise<Ioc | undefined>;
-  
+  getAllIocs(): Promise<Ioc[]>; // New method for history
+
   // Search query operations
   createSearchQuery(searchQuery: InsertSearchQuery): Promise<SearchQuery>;
   getSearchQuery(id: number): Promise<SearchQuery | undefined>;
@@ -64,6 +65,11 @@ export class DatabaseStorage implements IStorage {
   async getIocByUrl(url: string): Promise<Ioc | undefined> {
     const [ioc] = await db.select().from(iocs).where(eq(iocs.url, url));
     return ioc || undefined;
+  }
+
+  async getAllIocs(): Promise<Ioc[]> {
+    const iocsList = await db.select().from(iocs);
+    return iocsList;
   }
 
   // Search query methods

@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileCode2, Link, Copy, Globe, FileText, Server, Search, Loader2 } from "lucide-react";
+import { FileCode2, Link, Copy, Globe, FileText, Server, Search, Loader2, Archive } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Category, Indicator } from "@/lib/openai";
 
@@ -17,28 +17,32 @@ interface IocResultsProps {
   categories: Category[];
   isGeneratingSearches: boolean;
   onGenerateSearches: () => void;
+  isFromCache?: boolean;
 }
 
 export function IocResults({ 
   url, 
   categories,
   isGeneratingSearches, 
-  onGenerateSearches 
+  onGenerateSearches,
+  isFromCache = false
 }: IocResultsProps) {
   const { toast } = useToast();
-  
+
+  console.log("Categories prop:", categories);
+
   const copyIOCs = () => {
     const allIocs = categories.flatMap(category => 
       category.indicators.map(ioc => `${ioc.value} (${ioc.riskLevel} risk, ${ioc.category}): ${ioc.description}`)
     ).join("\n\n");
-    
+
     navigator.clipboard.writeText(allIocs);
     toast({
       title: "Copied to clipboard",
       description: "All IOCs have been copied to your clipboard",
     });
   };
-  
+
   // Helper to copy a single IOC
   const copyIoc = (ioc: Indicator) => {
     navigator.clipboard.writeText(ioc.value);
@@ -47,7 +51,7 @@ export function IocResults({
       description: `${ioc.value} has been copied to your clipboard`,
     });
   };
-  
+
   // Get icon based on category
   const getCategoryIcon = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
@@ -69,7 +73,7 @@ export function IocResults({
         return <FileText className="h-5 w-5 mr-2 text-primary-600 dark:text-primary-400" />;
     }
   };
-  
+
   // Get badge color based on risk level
   const getRiskBadgeColor = (riskLevel: string) => {
     switch (riskLevel.toLowerCase()) {
@@ -87,9 +91,17 @@ export function IocResults({
   return (
     <Card className="mb-8">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-medium text-secondary-700 dark:text-secondary-200">
-          Identified IOCs
-        </CardTitle>
+        <div className="flex items-center">
+          <CardTitle className="text-lg font-medium text-secondary-700 dark:text-secondary-200">
+            Identified IOCs
+          </CardTitle>
+          {isFromCache && (
+            <Badge variant="outline" className="ml-2 border-accent-400 text-accent-700 dark:border-accent-500 dark:text-accent-400">
+              <Archive className="h-3 w-3 mr-1" />
+              Cached
+            </Badge>
+          )}
+        </div>
         <Button 
           variant="outline" 
           size="sm" 

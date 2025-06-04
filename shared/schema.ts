@@ -47,14 +47,33 @@ export const insertSearchQuerySchema = createInsertSchema(searchQueries).pick({
 });
 
 // Define IOC types
-export const iocCategorySchema = z.enum([
-  "ip", 
-  "domain", 
-  "url", 
-  "hash", 
-  "email", 
-  "file"
-]);
+// export const iocCategorySchema = z.enum([
+//   "ip", 
+//   "domain", 
+//   "url", 
+//   "hash", 
+//   "email", 
+//   "file",
+//   "CVE",
+//   "registry",
+//   "process",
+//   "path",
+//   "command",
+//   "user-agent",
+//   "script"
+// ]);
+
+const knownCategories = [
+  "ip", "domain", "url", "hash", "email", "file", 
+  "cve", "registry", "process", "path", "command", "user-agent", "script"
+];
+
+export const iocCategorySchema = z.string().transform(val => {
+  if (!knownCategories.includes(val.toLowerCase())) {
+    console.warn(`⚠️ Unknown IOC category received: "${val}"`);
+  }
+  return val;
+});
 
 export const riskLevelSchema = z.enum([
   "high",

@@ -4,7 +4,7 @@ import { Moon, Sun } from "lucide-react";
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
-  
+
   return (
     <Button
       variant="ghost"

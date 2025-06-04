@@ -9,19 +9,19 @@ export function useTheme() {
     if (savedTheme) {
       return savedTheme;
     }
-    
+
     // Check system preference
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return "dark";
     }
-    
+
     return "light";
   });
 
   useEffect(() => {
     // Update localStorage
     localStorage.setItem("theme", theme);
-    
+
     // Update document classes
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
