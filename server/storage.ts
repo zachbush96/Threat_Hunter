@@ -9,14 +9,16 @@ import {
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
   // IOC operations
   createIoc(ioc: InsertIoc): Promise<Ioc>;
   getIoc(id: number): Promise<Ioc | undefined>;
   getIocByUrl(url: string): Promise<Ioc | undefined>;
-  getAllIocs(): Promise<Ioc[]>; // New method for history
+  getAllIocs(): Promise<Ioc[]>;
+  getIocsByUser(userId: number): Promise<Ioc[]>;
 
   // Search query operations
   createSearchQuery(searchQuery: InsertSearchQuery): Promise<SearchQuery>;
@@ -35,8 +37,13 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
     return user || undefined;
   }
 
@@ -69,6 +76,11 @@ export class DatabaseStorage implements IStorage {
 
   async getAllIocs(): Promise<Ioc[]> {
     const iocsList = await db.select().from(iocs);
+    return iocsList;
+  }
+
+  async getIocsByUser(userId: number): Promise<Ioc[]> {
+    const iocsList = await db.select().from(iocs).where(eq(iocs.userId, userId));
     return iocsList;
   }
 
