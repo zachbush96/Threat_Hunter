@@ -4,8 +4,6 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupAuth } from "./auth";
 
 const app = express();
-// behind a proxy (e.g. Replit) use X-Forwarded-Proto for req.protocol
-app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 setupAuth(app);
