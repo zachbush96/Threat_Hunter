@@ -5,11 +5,15 @@ import { z } from "zod";
 // User model for authentication
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  email: text("email").notNull().unique(),
+  googleId: text("google_id").unique(),
+  username: text("username"),
+  password: text("password"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
+  email: true,
+  googleId: true,
   username: true,
   password: true,
 });
@@ -20,6 +24,7 @@ export const iocs = pgTable("iocs", {
   url: text("url").notNull(),
   rawContent: text("raw_content"),
   indicators: jsonb("indicators").notNull(),
+  userId: integer("user_id").notNull(),
   createdAt: text("created_at").notNull(),
 });
 
@@ -27,6 +32,7 @@ export const insertIocSchema = createInsertSchema(iocs).pick({
   url: true,
   rawContent: true,
   indicators: true,
+  userId: true,
   createdAt: true,
 });
 
