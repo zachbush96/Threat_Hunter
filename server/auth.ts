@@ -41,7 +41,7 @@ export function setupAuth(app: Express) {
       {
         clientID: process.env.GOOGLE_CLIENT_ID || "",
         clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-        callbackURL,
+
       },
       async (
         _accessToken: string,

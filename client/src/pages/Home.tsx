@@ -118,7 +118,7 @@ export default function Home() {
         setIsFromCache(true);
         toast({
           title: "Using cached results",
-          description: "This URL has been analyzed before. Showing previous results.",
+          description: "This link has been analyzed before. Showing previous results.",
           variant: "default"
         });
       }
@@ -207,7 +207,7 @@ export default function Home() {
             IOC Generator & Search Builder
           </h2>
           <p className="text-black dark:text-secondary-300 mb-4">
-            Extract Indicators of Compromise (IOCs) from suspicious URLs and generate QRadar and Microsoft Sentinel search queries.
+            Extract Indicators of Compromise (IOCs) from threat reports or malware analysis pages and generate QRadar and Microsoft Sentinel search queries.
           </p>
           <div className="bg-secondary-50 dark:bg-secondary-700 rounded p-4 text-black dark:text-secondary-200 text-sm border-l-4 border-accent-500">
             <p className="flex items-start">
@@ -227,8 +227,8 @@ export default function Home() {
         {isFromCache && iocResult && (
           <Alert className="mb-6 border-accent-400 bg-accent-50 dark:bg-secondary-800 dark:border-accent-700">
             <Archive className="h-4 w-4 text-accent-600 dark:text-accent-500" />
-            <AlertDescription className="text-accent-800 dark:text-accent-400">
-              Showing cached results for this URL. Previously analyzed on {new Date().toLocaleDateString()}.
+          <AlertDescription className="text-accent-800 dark:text-accent-400">
+              Showing cached results for this link. Previously analyzed on {new Date().toLocaleDateString()}.
             </AlertDescription>
           </Alert>
         )}

@@ -37,7 +37,7 @@ export function HistoryMenu({ historyItems, isLoading, onSelectHistoryItem }: Hi
             Search History
           </SheetTitle>
           <SheetDescription>
-            View your previous URL analyses and their results.
+            View your previous report analyses and their results.
           </SheetDescription>
         </SheetHeader>
         
@@ -52,7 +52,7 @@ export function HistoryMenu({ historyItems, isLoading, onSelectHistoryItem }: Hi
             <div className="flex flex-col items-center justify-center h-32">
               <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
               <p className="text-muted-foreground text-center">No search history found.</p>
-              <p className="text-muted-foreground text-center text-sm">Search a URL to start building your history.</p>
+              <p className="text-muted-foreground text-center text-sm">Submit a report link to start building your history.</p>
             </div>
           ) : (
             <div className="space-y-4 pr-4">
