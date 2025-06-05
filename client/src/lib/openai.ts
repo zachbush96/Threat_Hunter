@@ -62,6 +62,21 @@ export interface IocDetailResponse {
   } | null;
 }
 
+export interface User {
+  id: number;
+  email: string;
+  username?: string | null;
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  const res = await fetch('/api/current-user', { credentials: 'include' });
+  if (res.status === 401) return null;
+  return await res.json();
+}
+
+export async function logout(): Promise<void> {
+  await apiRequest('POST', '/api/logout');
+}
 // Function to analyze a URL
 export async function analyzeUrl(url: string): Promise<AnalyzeUrlResponse> {
   const response = await apiRequest('POST', '/api/analyze-url', { url });

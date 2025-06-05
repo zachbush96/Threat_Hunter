@@ -1,10 +1,11 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { iocResultSchema, insertIocSchema, insertSearchQuerySchema, searchQuerySchema } from "@shared/schema";
+import { iocResultSchema, insertIocSchema, insertSearchQuerySchema, searchQuerySchema, type IocResult } from "@shared/schema";
 import fetch from "node-fetch";
 import OpenAI from "openai";
 import { z } from "zod";
+import { ensureAuthenticated } from "./auth";
 import { parse } from 'node-html-parser';
 
 // Create OpenAI client
@@ -18,7 +19,7 @@ const firecrawlBaseUrl = "https://api.firecrawl.dev/v1";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Route to scrape URL with Firecrawl and extract IOCs with OpenAI
-  app.post("/api/analyze-url", async (req, res) => {
+  app.post("/api/analyze-url", ensureAuthenticated, async (req, res) => {
     try {
       const { url } = req.body;
 
@@ -180,6 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url,
         rawContent: scrapedContent,
         indicators: validatedResults,
+        userId: (req.user as any).id,
         createdAt: new Date().toISOString()
       });
 
@@ -194,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Route to generate search queries for IOCs
-  app.post("/api/generate-searches", async (req, res) => {
+  app.post("/api/generate-searches", ensureAuthenticated, async (req, res) => {
     try {
       const { indicators } = req.body;
 
@@ -281,26 +283,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Route to retrieve IOC history
-  app.get("/api/history", async (req, res) => {
+  app.get("/api/history", ensureAuthenticated, async (req, res) => {
     try {
-      const iocHistory = await storage.getAllIocs();
+      const userId = (req.user as any).id as number;
+      const iocHistory = await storage.getIocsByUser(userId);
 
       // Map the results to include only necessary data for the listing
-      const history = iocHistory.map(ioc => ({
-        id: ioc.id,
-        url: ioc.url,
-        createdAt: ioc.createdAt,
-        // Extract summary information about indicators
-        summary: {
-          totalIndicators: ioc.indicators.indicators?.length || 0,
-          categories: ioc.indicators.categories?.map(cat => ({
-            name: cat.name,
-            count: cat.count
-          })) || [],
-          // Get the highest risk level present
-          highestRiskLevel: getHighestRiskLevel(ioc.indicators.indicators || [])
-        }
-      }));
+      const history = iocHistory.map(ioc => {
+        const indicatorsData = ioc.indicators as IocResult;
+        return {
+          id: ioc.id,
+          url: ioc.url,
+          createdAt: ioc.createdAt,
+          summary: {
+            totalIndicators: indicatorsData.indicators?.length || 0,
+            categories: indicatorsData.categories?.map((cat: any) => ({
+              name: cat.name,
+              count: cat.count
+            })) || [],
+            highestRiskLevel: getHighestRiskLevel(indicatorsData.indicators || [])
+          }
+        };
+      });
 
       return res.json(history);
     } catch (error) {
@@ -312,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Route to retrieve a specific IOC by ID
-  app.get("/api/history/:id", async (req, res) => {
+  app.get("/api/history/:id", ensureAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
 
@@ -323,6 +327,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const ioc = await storage.getIoc(id);
       if (!ioc) {
         return res.status(404).json({ message: "IOC not found" });
+      }
+
+      if (ioc.userId !== (req.user as any).id) {
+        return res.status(403).json({ message: "Forbidden" });
       }
 
       // Get associated search queries if they exist

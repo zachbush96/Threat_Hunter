@@ -4,6 +4,8 @@ import { IocResults } from "@/components/IocResults";
 import { SearchQueries } from "@/components/SearchQueries";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { HistoryMenu } from "@/components/HistoryMenu";
+import { AuthSection } from "@/components/AuthSection";
+import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import { FileDigit, AlertCircle, Archive } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -21,6 +23,7 @@ import {
 } from "@/lib/openai";
 
 export default function Home() {
+  const { user } = useUser();
   const [url, setUrl] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [iocResult, setIocResult] = useState<AnalyzeUrlResponse | null>(null);
@@ -32,12 +35,17 @@ export default function Home() {
 
   const { toast } = useToast();
 
-  // Fetch search history when component mounts
+  // Fetch search history when user changes
   useEffect(() => {
-    loadSearchHistory();
-  }, []);
+    if (user) {
+      loadSearchHistory();
+    } else {
+      setHistoryItems([]);
+    }
+  }, [user]);
 
   const loadSearchHistory = async () => {
+    if (!user) return;
     setIsLoadingHistory(true);
     try {
       const history = await getIocHistory();
@@ -116,7 +124,9 @@ export default function Home() {
       }
 
       // Refresh the history list after a new search
-      loadSearchHistory();
+      if (user) {
+        loadSearchHistory();
+      }
     } catch (error) {
       console.error("Error analyzing URL:", error);
       toast({
@@ -183,7 +193,10 @@ export default function Home() {
               <h1 className="text-xl font-semibold">Threat Hunter</h1>
             </div>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-4">
+            <AuthSection />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
