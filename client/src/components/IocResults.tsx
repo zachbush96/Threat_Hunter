@@ -113,14 +113,14 @@ export function IocResults({
         </Button>
       </CardHeader>
       <CardContent>
-        {/* URL Source Card */}
+        {/* Report Source Card */}
         <div className="mb-4 p-4 border border-secondary-200 dark:border-secondary-600 rounded-md bg-secondary-50 dark:bg-secondary-700">
           <div className="flex items-start">
             <div className="flex-shrink-0 mt-0.5">
               <Link className="h-5 w-5 text-secondary-500" />
             </div>
             <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-secondary-700 dark:text-secondary-200">Analyzed URL</p>
+              <p className="text-sm font-medium text-secondary-700 dark:text-secondary-200">Analyzed Report</p>
               <p className="mt-1 text-sm text-secondary-500 dark:text-secondary-400 break-all">{url}</p>
             </div>
           </div>

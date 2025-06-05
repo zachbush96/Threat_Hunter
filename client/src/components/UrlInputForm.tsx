@@ -35,10 +35,10 @@ export function UrlInputForm({ onSubmit, isLoading }: UrlInputFormProps) {
     <Card className="mb-8">
       <CardHeader>
         <CardTitle className="text-lg font-medium text-secondary-700 dark:text-secondary-200">
-          Enter Suspicious URL
+          Enter Threat Report URL
         </CardTitle>
         <CardDescription>
-          Enter a URL to analyze for indicators of compromise
+          Paste a link to a threat report or malware analysis page to extract indicators of compromise
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -50,7 +50,7 @@ export function UrlInputForm({ onSubmit, isLoading }: UrlInputFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-secondary-600 dark:text-secondary-300">
-                    URL to Analyze
+                    Report URL to Analyze
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -58,7 +58,7 @@ export function UrlInputForm({ onSubmit, isLoading }: UrlInputFormProps) {
                         <Link className="h-5 w-5 text-secondary-400" />
                       </div>
                       <Input
-                        placeholder="https://example.com/suspicious-page"
+                        placeholder="https://example.com/threat-report"
                         className="pl-10"
                         {...field}
                       />
@@ -80,7 +80,7 @@ export function UrlInputForm({ onSubmit, isLoading }: UrlInputFormProps) {
                     Analyzing...
                   </>
                 ) : (
-                  "Analyze URL"
+                  "Analyze Report"
                 )}
               </Button>
             </div>
